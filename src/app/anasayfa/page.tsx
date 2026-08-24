@@ -1,17 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
+import { getStoredUser, type Kullanici } from "@/lib/user";
+import { supabase } from "@/lib/supabase";
 
-const bugunSorular = [
-  { ders: "Matematik", sayi: 42, renk: "text-chalk-yellow", href: "/ders/matematik" },
-  { ders: "Fizik", sayi: 15, renk: "text-chalk-blue" },
-  { ders: "Kimya", sayi: 20, renk: "text-chalk-coral" },
-  { ders: "Türkçe", sayi: 30, renk: "text-chalk-green" },
+const DERSLER = [
+  { ad: "Matematik", renk: "text-chalk-yellow", href: "/ders/matematik" },
+  { ad: "Fizik", renk: "text-chalk-blue" },
+  { ad: "Kimya", renk: "text-chalk-coral" },
+  { ad: "Türkçe", renk: "text-chalk-green" },
 ];
-
-const toplam = bugunSorular.reduce((sum, d) => sum + d.sayi, 0);
 
 const denemeler = [
   { x: 20, y: 150 },
@@ -27,12 +28,17 @@ const hedefler = [
   { text: "1 deneme çöz", tamam: false },
 ];
 
-function TopBar({ active }: { active: number }) {
+const bugununTarihi = new Date().toLocaleDateString("tr-TR", {
+  day: "numeric",
+  month: "long",
+});
+
+function TopBar({ active, isim }: { active: number; isim: string }) {
   return (
     <>
       <div className="flex items-center justify-between px-6 pt-6 text-[13px] text-chalk/55">
-        <span>24 Ağustos</span>
-        <span>Merhaba, Eren</span>
+        <span>{bugununTarihi}</span>
+        <span>Merhaba, {isim}</span>
       </div>
       <div className="flex justify-center gap-2 py-4">
         {[0, 1, 2].map((i) => (
@@ -49,8 +55,35 @@ function TopBar({ active }: { active: number }) {
 }
 
 export default function Anasayfa() {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [kullanici, setKullanici] = useState<Kullanici | null>(null);
+  const [dersSayilari, setDersSayilari] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const k = getStoredUser();
+    if (!k) {
+      router.replace("/");
+      return;
+    }
+    setKullanici(k);
+
+    const bugun = new Date().toLocaleDateString("en-CA");
+
+    supabase
+      .from("sorular")
+      .select("ders, sayi")
+      .eq("kullanici_id", k.id)
+      .eq("tarih", bugun)
+      .then(({ data }) => {
+        const toplamlar: Record<string, number> = {};
+        for (const satir of data ?? []) {
+          toplamlar[satir.ders] = (toplamlar[satir.ders] ?? 0) + satir.sayi;
+        }
+        setDersSayilari(toplamlar);
+      });
+  }, [router]);
 
   const onScroll = () => {
     const el = containerRef.current;
@@ -58,9 +91,13 @@ export default function Anasayfa() {
     setActive(Math.round(el.scrollLeft / el.clientWidth));
   };
 
+  if (!kullanici) return null;
+
+  const toplam = DERSLER.reduce((sum, d) => sum + (dersSayilari[d.ad] ?? 0), 0);
+
   return (
     <div className="flex flex-1 flex-col">
-      <TopBar active={active} />
+      <TopBar active={active} isim={kullanici.isim} />
 
       <div
         ref={containerRef}
@@ -72,19 +109,21 @@ export default function Anasayfa() {
           <h1 className="font-marker text-2xl">Bugün Çözülen Sorular</h1>
 
           <div className="flex flex-col">
-            {bugunSorular.map((d) => {
+            {DERSLER.map((d) => {
               const row = (
                 <div className="flex items-baseline justify-between border-b border-dashed border-chalk/25 py-2.5">
-                  <span className={`text-lg font-bold ${d.renk}`}>{d.ders}</span>
-                  <span className="text-xl font-bold text-chalk">{d.sayi}</span>
+                  <span className={`text-lg font-bold ${d.renk}`}>{d.ad}</span>
+                  <span className="text-xl font-bold text-chalk">
+                    {dersSayilari[d.ad] ?? 0}
+                  </span>
                 </div>
               );
               return d.href ? (
-                <Link key={d.ders} href={d.href}>
+                <Link key={d.ad} href={d.href}>
                   {row}
                 </Link>
               ) : (
-                <div key={d.ders}>{row}</div>
+                <div key={d.ad}>{row}</div>
               );
             })}
           </div>

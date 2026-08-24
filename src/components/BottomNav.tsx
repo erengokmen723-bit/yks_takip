@@ -30,14 +30,14 @@ export function BottomNav({ active }: { active?: "home" }) {
         </IconWrap>
       </Link>
 
-      <button type="button" aria-label="Soru ekle (yakında)">
+      <Link href="/ekle/soru" aria-label="Soru ekle">
         <IconWrap>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2efe4" strokeWidth="1.8" strokeLinecap="round">
             <circle cx="12" cy="12" r="9" />
             <path d="M12 8v8M8 12h8" />
           </svg>
         </IconWrap>
-      </button>
+      </Link>
 
       <button type="button" aria-label="Deneme ekle (yakında)">
         <IconWrap>
