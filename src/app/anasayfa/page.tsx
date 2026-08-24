@@ -89,18 +89,24 @@ export default function Anasayfa() {
             })}
           </div>
 
-          <div className="relative mt-4 flex flex-1 flex-col items-center justify-center gap-1">
-            <svg width="150" height="76" viewBox="0 0 150 76" className="absolute -top-1">
-              <path
-                d="M10 38 Q4 6 75 8 Q146 6 140 40 Q144 70 75 68 Q6 70 10 38Z"
-                fill="none"
-                stroke="#e8d189"
-                strokeWidth="3"
-                opacity="0.85"
-              />
-            </svg>
-            <span className="mt-2.5 text-xs text-chalk/55">Toplam</span>
-            <span className="font-marker text-[44px] leading-none">{toplam}</span>
+          <div className="mt-4 flex flex-1 flex-col items-center justify-center">
+            <div className="relative flex flex-col items-center gap-1 px-10 py-4">
+              <svg
+                viewBox="0 0 150 76"
+                preserveAspectRatio="none"
+                className="absolute inset-0 h-full w-full"
+              >
+                <path
+                  d="M10 38 Q4 6 75 8 Q146 6 140 40 Q144 70 75 68 Q6 70 10 38Z"
+                  fill="none"
+                  stroke="#e8d189"
+                  strokeWidth="3"
+                  opacity="0.85"
+                />
+              </svg>
+              <span className="text-xs text-chalk/55">Toplam</span>
+              <span className="font-marker text-[44px] leading-none">{toplam}</span>
+            </div>
           </div>
         </section>
 
