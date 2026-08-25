@@ -14,6 +14,9 @@ create table if not exists sorular (
   kullanici_id uuid not null references kullanicilar(id) on delete cascade,
   ders text not null,
   sayi int not null,
+  dogru int not null default 0,
+  yanlis int not null default 0,
+  bos int not null default 0,
   tarih date not null default current_date,
   created_at timestamptz not null default now()
 );

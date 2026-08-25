@@ -202,7 +202,7 @@ export default function Anasayfa() {
         className="no-scrollbar flex flex-1 snap-x snap-mandatory overflow-x-auto"
       >
         {/* Sayfa 1 — Bugün çözülen sorular */}
-        <section className="flex w-full shrink-0 snap-center flex-col gap-4 px-6 pb-6">
+        <section className="flex w-full shrink-0 snap-center [scroll-snap-stop:always] flex-col gap-4 px-6 pb-6">
           <h1 className="font-marker text-2xl">Bugün Çözülen Sorular</h1>
 
           <div className="flex flex-col">
@@ -247,7 +247,7 @@ export default function Anasayfa() {
         </section>
 
         {/* Sayfa 2 — Deneme net trendi */}
-        <section className="flex w-full shrink-0 snap-center flex-col gap-4 px-6 pb-6">
+        <section className="flex w-full shrink-0 snap-center [scroll-snap-stop:always] flex-col gap-4 px-6 pb-6">
           <div className="flex items-center justify-between">
             <h1 className="font-marker text-2xl">Deneme Net Ortalaman</h1>
             <div className="flex gap-1.5">
@@ -359,7 +359,7 @@ export default function Anasayfa() {
         </section>
 
         {/* Sayfa 3 — Bugünkü hedefler */}
-        <section className="flex w-full shrink-0 snap-center flex-col gap-4 px-6 pb-6">
+        <section className="flex w-full shrink-0 snap-center [scroll-snap-stop:always] flex-col gap-4 px-6 pb-6">
           <h1 className="font-marker text-2xl">Bugünkü Hedefler</h1>
 
           {hedefler.length === 0 ? (

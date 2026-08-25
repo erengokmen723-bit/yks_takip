@@ -13,10 +13,16 @@ const DERSLER = [
   { ad: "Türkçe", renk: "text-chalk-green", border: "border-chalk-green" },
 ];
 
+const ALANLAR = [
+  { key: "dogru", etiket: "Doğru", renk: "focus:border-chalk-green" },
+  { key: "yanlis", etiket: "Yanlış", renk: "focus:border-chalk-coral" },
+  { key: "bos", etiket: "Boş", renk: "focus:border-chalk/50" },
+] as const;
+
 export default function SoruEkle() {
   const router = useRouter();
   const [ders, setDers] = useState<string | null>(null);
-  const [sayi, setSayi] = useState("");
+  const [degerler, setDegerler] = useState({ dogru: "", yanlis: "", bos: "" });
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
 
@@ -24,16 +30,20 @@ export default function SoruEkle() {
     if (!getStoredUser()) router.replace("/");
   }, [router]);
 
+  const dogru = parseInt(degerler.dogru, 10) || 0;
+  const yanlis = parseInt(degerler.yanlis, 10) || 0;
+  const bos = parseInt(degerler.bos, 10) || 0;
+  const toplam = dogru + yanlis + bos;
+
   async function kaydet() {
     const kullanici = getStoredUser();
-    const adet = parseInt(sayi, 10);
-    if (!kullanici || !ders || !adet || adet <= 0) return;
+    if (!kullanici || !ders || toplam <= 0) return;
 
     setGonderiliyor(true);
     setHata(null);
     const { error } = await supabase
       .from("sorular")
-      .insert({ kullanici_id: kullanici.id, ders, sayi: adet });
+      .insert({ kullanici_id: kullanici.id, ders, sayi: toplam, dogru, yanlis, bos });
 
     if (error) {
       setHata("Kaydedilemedi, tekrar dener misin?");
@@ -73,15 +83,28 @@ export default function SoruEkle() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-chalk/55">Kaç soru çözdün?</p>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={sayi}
-          onChange={(e) => setSayi(e.target.value)}
-          placeholder="0"
-          className="w-full border-b-2 border-chalk/40 bg-transparent py-2 text-center font-marker text-4xl text-chalk placeholder:text-chalk/25 focus:border-chalk-yellow focus:outline-none"
-        />
+        <p className="text-sm text-chalk/55">Doğru / yanlış / boş?</p>
+        <div className="grid grid-cols-3 gap-3">
+          {ALANLAR.map((a) => (
+            <div key={a.key} className="flex flex-col items-center gap-1.5">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={degerler[a.key]}
+                onChange={(e) =>
+                  setDegerler((onceki) => ({ ...onceki, [a.key]: e.target.value }))
+                }
+                placeholder="0"
+                className={`w-full border-b-2 border-chalk/40 bg-transparent py-2 text-center font-marker text-3xl text-chalk placeholder:text-chalk/25 focus:outline-none ${a.renk}`}
+              />
+              <span className="text-xs text-chalk/50">{a.etiket}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-sm text-chalk/55">
+          Toplam <span className="font-bold text-chalk">{toplam}</span> soru
+        </p>
       </div>
 
       {hata && <p className="text-center text-sm text-chalk-coral">{hata}</p>}
@@ -90,7 +113,7 @@ export default function SoruEkle() {
         <button
           type="button"
           onClick={kaydet}
-          disabled={gonderiliyor || !ders || !sayi}
+          disabled={gonderiliyor || !ders || toplam <= 0}
           className="flex min-h-11 items-center justify-center rounded-xl border-2 border-chalk-yellow px-10 font-marker text-[15px] text-chalk-yellow disabled:opacity-40"
         >
           {gonderiliyor ? "..." : "Kaydet"}
