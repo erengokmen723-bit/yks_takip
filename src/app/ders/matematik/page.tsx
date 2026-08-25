@@ -1,15 +1,61 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
+import { getStoredUser } from "@/lib/user";
+import { supabase } from "@/lib/supabase";
 
-const konular = [
-  { ad: "Üslü Sayılar", sayi: 12 },
-  { ad: "Köklü Sayılar", sayi: 0 },
-  { ad: "Çarpanlara Ayırma", sayi: 5 },
-  { ad: "Mutlak Değer", sayi: 0 },
-  { ad: "Denklem Çözme", sayi: 25 },
-];
+type GunKaydi = { tarih: string; sayi: number; dogru: number; yanlis: number; bos: number };
+
+function formatTarih(tarih: string) {
+  return new Date(tarih).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+}
 
 export default function Matematik() {
+  const router = useRouter();
+  const [kayitlar, setKayitlar] = useState<GunKaydi[] | null>(null);
+
+  useEffect(() => {
+    const k = getStoredUser();
+    if (!k) {
+      router.replace("/");
+      return;
+    }
+
+    supabase
+      .from("sorular")
+      .select("tarih, sayi, dogru, yanlis, bos")
+      .eq("kullanici_id", k.id)
+      .eq("ders", "Matematik")
+      .order("tarih", { ascending: false })
+      .then(({ data }) => {
+        const gruplar: Record<string, GunKaydi> = {};
+        for (const satir of data ?? []) {
+          const onceki = gruplar[satir.tarih] ?? {
+            tarih: satir.tarih,
+            sayi: 0,
+            dogru: 0,
+            yanlis: 0,
+            bos: 0,
+          };
+          gruplar[satir.tarih] = {
+            tarih: satir.tarih,
+            sayi: onceki.sayi + satir.sayi,
+            dogru: onceki.dogru + satir.dogru,
+            yanlis: onceki.yanlis + satir.yanlis,
+            bos: onceki.bos + satir.bos,
+          };
+        }
+        setKayitlar(
+          Object.values(gruplar).sort((a, b) => (a.tarih < b.tarih ? 1 : -1))
+        );
+      });
+  }, [router]);
+
+  const toplam = kayitlar?.reduce((sum, k) => sum + k.sayi, 0) ?? 0;
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-4 px-6 pb-6 pt-6">
@@ -23,37 +69,48 @@ export default function Matematik() {
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          <h1 className="font-marker text-2xl text-chalk-yellow">Matematik</h1>
+          <div>
+            <h1 className="font-marker text-2xl text-chalk-yellow">Matematik</h1>
+            {kayitlar && kayitlar.length > 0 && (
+              <p className="text-[13px] text-chalk/55">Toplam {toplam} soru</p>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-col">
-          {konular.map((k) => (
-            <div
-              key={k.ad}
-              className="flex items-center justify-between border-b border-dashed border-chalk/25 py-3"
+        {kayitlar && kayitlar.length === 0 && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-10">
+            <p className="text-sm text-chalk/50">Henüz Matematik sorusu eklemedin.</p>
+            <Link
+              href="/ekle/soru"
+              className="flex min-h-11 items-center justify-center rounded-xl border-2 border-chalk-yellow px-6 font-marker text-sm text-chalk-yellow"
             >
-              <span className="text-[17px] text-chalk">{k.ad}</span>
-              <span
-                className={`flex h-11 min-w-11 items-center justify-center rounded-lg border text-base font-bold ${
-                  k.sayi > 0
-                    ? "border-chalk/50 text-chalk"
-                    : "border-chalk/25 text-chalk/40"
-                }`}
-              >
-                {k.sayi}
-              </span>
-            </div>
-          ))}
-        </div>
+              Soru Ekle
+            </Link>
+          </div>
+        )}
 
-        <div className="flex flex-1 items-end justify-center pb-1.5">
-          <button
-            type="button"
-            className="flex min-h-11 items-center justify-center rounded-xl border-2 border-chalk-yellow px-10 font-marker text-[15px] text-chalk-yellow"
-          >
-            Kaydet
-          </button>
-        </div>
+        {kayitlar && kayitlar.length > 0 && (
+          <div className="flex flex-col overflow-y-auto">
+            {kayitlar.map((k) => (
+              <div
+                key={k.tarih}
+                className="flex flex-col gap-1 border-b border-dashed border-chalk/25 py-2.5"
+              >
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[15px] text-chalk">{formatTarih(k.tarih)}</span>
+                  <span className="text-lg font-bold text-chalk">{k.sayi}</span>
+                </div>
+                <p className="text-xs text-chalk/50">
+                  <span className="text-chalk-green">{k.dogru} D</span>
+                  {" · "}
+                  <span className="text-chalk-coral">{k.yanlis} Y</span>
+                  {" · "}
+                  <span>{k.bos} B</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <BottomNav />
