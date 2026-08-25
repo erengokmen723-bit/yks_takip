@@ -26,6 +26,13 @@ create table if not exists denemeler (
   kullanici_id uuid not null references kullanicilar(id) on delete cascade,
   net numeric not null,
   tur text not null default 'TYT',
+  turkce_net numeric,
+  sosyal_net numeric,
+  matematik_net numeric,
+  fen_net numeric,
+  fizik_net numeric,
+  kimya_net numeric,
+  biyoloji_net numeric,
   tarih date not null default current_date,
   created_at timestamptz not null default now()
 );
