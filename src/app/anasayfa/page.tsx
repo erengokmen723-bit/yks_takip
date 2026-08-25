@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { getStoredUser, type Kullanici } from "@/lib/user";
 import { supabase } from "@/lib/supabase";
 import { DERSLER } from "@/lib/dersler";
+import { yksGunSayaci } from "@/lib/sinav";
 
 type DersOzet = { sayi: number; dogru: number; yanlis: number; bos: number };
 type Deneme = { id: string; net: number; tur: string };
@@ -42,6 +43,7 @@ const bugununTarihi = new Date().toLocaleDateString("tr-TR", {
   day: "numeric",
   month: "long",
 });
+const yksGunKaldi = yksGunSayaci();
 
 function TopBar({
   active,
@@ -71,6 +73,11 @@ function TopBar({
           </button>
         </div>
       </div>
+      {yksGunKaldi > 0 && (
+        <p className="pt-2 text-center text-xs text-chalk/50">
+          YKS&apos;ye <span className="font-bold text-chalk-yellow">{yksGunKaldi}</span> gün
+        </p>
+      )}
       <div className="flex justify-center gap-2 py-4">
         {[0, 1, 2].map((i) => (
           <span
