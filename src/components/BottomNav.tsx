@@ -39,7 +39,7 @@ export function BottomNav({ active }: { active?: "home" }) {
         </IconWrap>
       </Link>
 
-      <button type="button" aria-label="Deneme ekle (yakında)">
+      <Link href="/ekle/deneme" aria-label="Deneme ekle">
         <IconWrap>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2efe4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19V5" />
@@ -47,16 +47,16 @@ export function BottomNav({ active }: { active?: "home" }) {
             <path d="M7 15l4-5 3 3 5-7" />
           </svg>
         </IconWrap>
-      </button>
+      </Link>
 
-      <button type="button" aria-label="Hedef koy (yakında)">
+      <Link href="/ekle/hedef" aria-label="Hedef koy">
         <IconWrap>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2efe4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 3v18" />
             <path d="M6 4h10l-2.5 3.5L16 11H6" />
           </svg>
         </IconWrap>
-      </button>
+      </Link>
     </nav>
   );
 }
