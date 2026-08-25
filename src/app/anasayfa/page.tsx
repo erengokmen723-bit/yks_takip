@@ -14,6 +14,7 @@ const DERSLER = [
   { ad: "Türkçe", renk: "text-chalk-green" },
 ];
 
+type DersOzet = { sayi: number; dogru: number; yanlis: number; bos: number };
 type Deneme = { id: string; net: number; tur: string };
 type Hedef = { id: string; metin: string; tamam: boolean };
 type DenemeTuru = "TYT" | "AYT";
@@ -95,7 +96,7 @@ export default function Anasayfa() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [kullanici, setKullanici] = useState<Kullanici | null>(null);
-  const [dersSayilari, setDersSayilari] = useState<Record<string, number>>({});
+  const [dersOzetleri, setDersOzetleri] = useState<Record<string, DersOzet>>({});
   const [denemelerByTur, setDenemelerByTur] = useState<Record<DenemeTuru, Deneme[]>>({
     TYT: [],
     AYT: [],
@@ -116,15 +117,21 @@ export default function Anasayfa() {
 
     supabase
       .from("sorular")
-      .select("ders, sayi")
+      .select("ders, sayi, dogru, yanlis, bos")
       .eq("kullanici_id", k.id)
       .eq("tarih", bugun)
       .then(({ data }) => {
-        const toplamlar: Record<string, number> = {};
+        const toplamlar: Record<string, DersOzet> = {};
         for (const satir of data ?? []) {
-          toplamlar[satir.ders] = (toplamlar[satir.ders] ?? 0) + satir.sayi;
+          const onceki = toplamlar[satir.ders] ?? { sayi: 0, dogru: 0, yanlis: 0, bos: 0 };
+          toplamlar[satir.ders] = {
+            sayi: onceki.sayi + satir.sayi,
+            dogru: onceki.dogru + satir.dogru,
+            yanlis: onceki.yanlis + satir.yanlis,
+            bos: onceki.bos + satir.bos,
+          };
         }
-        setDersSayilari(toplamlar);
+        setDersOzetleri(toplamlar);
       });
 
     for (const tur of DENEME_TURLERI) {
@@ -177,7 +184,7 @@ export default function Anasayfa() {
       return;
     }
 
-    setDersSayilari({});
+    setDersOzetleri({});
     setDenemelerByTur({ TYT: [], AYT: [] });
     setHedefler([]);
   }
@@ -190,7 +197,7 @@ export default function Anasayfa() {
 
   if (!kullanici) return null;
 
-  const toplam = DERSLER.reduce((sum, d) => sum + (dersSayilari[d.ad] ?? 0), 0);
+  const toplam = DERSLER.reduce((sum, d) => sum + (dersOzetleri[d.ad]?.sayi ?? 0), 0);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -207,12 +214,22 @@ export default function Anasayfa() {
 
           <div className="flex flex-col">
             {DERSLER.map((d) => {
+              const ozet = dersOzetleri[d.ad];
               const row = (
-                <div className="flex items-baseline justify-between border-b border-dashed border-chalk/25 py-2.5">
-                  <span className={`text-lg font-bold ${d.renk}`}>{d.ad}</span>
-                  <span className="text-xl font-bold text-chalk">
-                    {dersSayilari[d.ad] ?? 0}
-                  </span>
+                <div className="flex flex-col gap-1 border-b border-dashed border-chalk/25 py-2.5">
+                  <div className="flex items-baseline justify-between">
+                    <span className={`text-lg font-bold ${d.renk}`}>{d.ad}</span>
+                    <span className="text-xl font-bold text-chalk">{ozet?.sayi ?? 0}</span>
+                  </div>
+                  {ozet && ozet.sayi > 0 && (
+                    <p className="text-xs text-chalk/50">
+                      <span className="text-chalk-green">{ozet.dogru} D</span>
+                      {" · "}
+                      <span className="text-chalk-coral">{ozet.yanlis} Y</span>
+                      {" · "}
+                      <span>{ozet.bos} B</span>
+                    </p>
+                  )}
                 </div>
               );
               return d.href ? (

@@ -18,7 +18,7 @@ function IconWrap({
   );
 }
 
-export function BottomNav({ active }: { active?: "home" }) {
+export function BottomNav({ active }: { active?: "home" | "istatistik" }) {
   return (
     <nav className="wood-bg flex items-center justify-around border-t-2 border-black/25 py-1">
       <Link href="/anasayfa" aria-label="Anasayfa">
@@ -54,6 +54,14 @@ export function BottomNav({ active }: { active?: "home" }) {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2efe4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 3v18" />
             <path d="M6 4h10l-2.5 3.5L16 11H6" />
+          </svg>
+        </IconWrap>
+      </Link>
+
+      <Link href="/istatistik" aria-label="İstatistikler">
+        <IconWrap active={active === "istatistik"}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2efe4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 20V10M12 20V4M20 20v-7" />
           </svg>
         </IconWrap>
       </Link>
