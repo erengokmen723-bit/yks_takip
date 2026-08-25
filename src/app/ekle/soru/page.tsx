@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredUser } from "@/lib/user";
 import { supabase } from "@/lib/supabase";
-
-const DERSLER = [
-  { ad: "Matematik", renk: "text-chalk-yellow", border: "border-chalk-yellow" },
-  { ad: "Fizik", renk: "text-chalk-blue", border: "border-chalk-blue" },
-  { ad: "Kimya", renk: "text-chalk-coral", border: "border-chalk-coral" },
-  { ad: "Türkçe", renk: "text-chalk-green", border: "border-chalk-green" },
-];
+import { DERSLER } from "@/lib/dersler";
 
 const ALANLAR = [
   { key: "dogru", etiket: "Doğru", renk: "focus:border-chalk-green" },

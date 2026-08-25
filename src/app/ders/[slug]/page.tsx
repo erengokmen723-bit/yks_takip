@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
 import { getStoredUser } from "@/lib/user";
 import { supabase } from "@/lib/supabase";
+import { DERSLER } from "@/lib/dersler";
 
 type GunKaydi = { tarih: string; sayi: number; dogru: number; yanlis: number; bos: number };
 
@@ -13,8 +14,10 @@ function formatTarih(tarih: string) {
   return new Date(tarih).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 }
 
-export default function Matematik() {
+export default function DersDetay() {
   const router = useRouter();
+  const params = useParams<{ slug: string }>();
+  const ders = DERSLER.find((d) => d.slug === params.slug);
   const [kayitlar, setKayitlar] = useState<GunKaydi[] | null>(null);
 
   useEffect(() => {
@@ -23,12 +26,16 @@ export default function Matematik() {
       router.replace("/");
       return;
     }
+    if (!ders) {
+      router.replace("/anasayfa");
+      return;
+    }
 
     supabase
       .from("sorular")
       .select("tarih, sayi, dogru, yanlis, bos")
       .eq("kullanici_id", k.id)
-      .eq("ders", "Matematik")
+      .eq("ders", ders.ad)
       .order("tarih", { ascending: false })
       .then(({ data }) => {
         const gruplar: Record<string, GunKaydi> = {};
@@ -52,7 +59,9 @@ export default function Matematik() {
           Object.values(gruplar).sort((a, b) => (a.tarih < b.tarih ? 1 : -1))
         );
       });
-  }, [router]);
+  }, [router, ders]);
+
+  if (!ders) return null;
 
   const toplam = kayitlar?.reduce((sum, k) => sum + k.sayi, 0) ?? 0;
 
@@ -70,7 +79,7 @@ export default function Matematik() {
             </svg>
           </Link>
           <div>
-            <h1 className="font-marker text-2xl text-chalk-yellow">Matematik</h1>
+            <h1 className={`font-marker text-2xl ${ders.renk}`}>{ders.ad}</h1>
             {kayitlar && kayitlar.length > 0 && (
               <p className="text-[13px] text-chalk/55">Toplam {toplam} soru</p>
             )}
@@ -79,7 +88,7 @@ export default function Matematik() {
 
         {kayitlar && kayitlar.length === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-10">
-            <p className="text-sm text-chalk/50">Henüz Matematik sorusu eklemedin.</p>
+            <p className="text-sm text-chalk/50">Henüz {ders.ad} sorusu eklemedin.</p>
             <Link
               href="/ekle/soru"
               className="flex min-h-11 items-center justify-center rounded-xl border-2 border-chalk-yellow px-6 font-marker text-sm text-chalk-yellow"

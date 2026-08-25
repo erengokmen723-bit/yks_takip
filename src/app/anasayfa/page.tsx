@@ -6,13 +6,7 @@ import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
 import { getStoredUser, type Kullanici } from "@/lib/user";
 import { supabase } from "@/lib/supabase";
-
-const DERSLER = [
-  { ad: "Matematik", renk: "text-chalk-yellow", href: "/ders/matematik" },
-  { ad: "Fizik", renk: "text-chalk-blue" },
-  { ad: "Kimya", renk: "text-chalk-coral" },
-  { ad: "Türkçe", renk: "text-chalk-green" },
-];
+import { DERSLER } from "@/lib/dersler";
 
 type DersOzet = { sayi: number; dogru: number; yanlis: number; bos: number };
 type Deneme = { id: string; net: number; tur: string };
@@ -232,12 +226,10 @@ export default function Anasayfa() {
                   )}
                 </div>
               );
-              return d.href ? (
-                <Link key={d.ad} href={d.href}>
+              return (
+                <Link key={d.ad} href={`/ders/${d.slug}`}>
                   {row}
                 </Link>
-              ) : (
-                <div key={d.ad}>{row}</div>
               );
             })}
           </div>
